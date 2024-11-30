@@ -13,45 +13,58 @@ def calcul_probabilites():
     solutions = np.linalg.solve(coefficients, rhs)  # Résolution des équations linéaires
     return solutions
 
-# Génération des cartes avec couleurs
+# Génération des cartes avec emojis pour les couleurs
 def creer_jeu_de_cartes():
-    couleurs = ["Atouts", "Cœurs", "Carreaux", "Trèfles"]
-    valeurs = ["A", "10", "K", "Q", "J", "9", "8", "7"]
-    jeu = [f"{valeur} de {couleur}" for couleur in couleurs for valeur in valeurs]
+    couleurs = {"♥️": "Cœurs", "♦️": "Carreaux", "♣️": "Trèfles"}
+    valeurs = {"A": "🂡", "10": "🔟", "K": "👑", "Q": "👸", "J": "🤵", "9": "9️⃣", "8": "8️⃣", "7": "7️⃣"}
+    jeu = [f"{valeurs[valeur]} {couleur}" for couleur in couleurs for valeur in valeurs]
     return jeu
 
-# Fonction pour prendre l'ordre des cartes en input
+# Fonction pour prendre l'ordre des cartes en texte
 def saisir_ordre_cartes(cartes):
-    print("\nOrdre actuel des cartes :")
-    for i, carte in enumerate(cartes):
-        print(f"{i+1}. {carte}")
+    print("\nOptions pour l'ordre des cartes :")
+    print("1. Conserver l'ordre actuel")
+    print("2. Mélanger les cartes de manière aléatoire")
+    print("3. Saisir un ordre personnalisé en texte")
+
+    choix = input("Entrez votre choix (1, 2 ou 3) : ").strip()
     
-    print("\nSouhaitez-vous entrer un nouvel ordre ?")
-    choix = input("Tapez 'oui' pour entrer un nouvel ordre, ou 'non' pour garder l'ordre actuel : ").strip().lower()
-    
-    if choix == 'oui':
-        print("\nEntrez les indices des cartes dans l'ordre souhaité, séparés par des espaces.")
-        print("Exemple : pour inverser complètement l'ordre, entrez : 32 31 30 ... 1")
+    if choix == '3':  # Saisie d'un ordre personnalisé
+        print("\nOrdre actuel des cartes (format '🂡 ♥️') :")
+        print(' | '.join(cartes))
         
+        print("\nEntrez le nouvel ordre en copiant-collant les cartes, séparées par ' | '.")
         try:
-            indices = list(map(int, input("Nouvel ordre (indices 1 à 32) : ").strip().split()))
-            if len(indices) != len(cartes) or any(i < 1 or i > len(cartes) for i in indices):
+            nouvel_ordre = input("Nouvel ordre : ").strip().split(' | ')
+            if len(nouvel_ordre) != len(cartes):
                 print("❌ Entrée invalide. L'ordre sera conservé.")
                 return cartes
-            # Recréer le paquet dans le nouvel ordre
-            return [cartes[i-1] for i in indices]
+            return nouvel_ordre
         except ValueError:
             print("❌ Entrée invalide. L'ordre sera conservé.")
             return cartes
-    else:
+    
+    elif choix == '2':  # Mélange complet aléatoire
+        random.shuffle(cartes)
+        print("\nLes cartes ont été mélangées de manière aléatoire.")
+        return cartes
+    
+    else:  # Conserver l'ordre actuel
         print("L'ordre actuel est conservé.")
         return cartes
+
+# Fonction pour afficher les cartes horizontalement avec emojis
+def afficher_cartes_horizontal(cartes, message):
+    print(f"{message} : {' | '.join(cartes)}")
 
 # Fonction pour simuler la distribution des cartes avec coupe et probabilités
 def distribution_cartes_belote_avec_probas(probabilites):
     cartes = creer_jeu_de_cartes()
-    cartes = saisir_ordre_cartes(cartes)  # Prendre l'ordre personnalisé des cartes
+    cartes = saisir_ordre_cartes(cartes)  # Prendre l'ordre personnalisé ou aléatoire des cartes
     
+    # Afficher l'ordre initial des cartes
+    afficher_cartes_horizontal(cartes, "🔢 Ordre initial des cartes")
+
     n_joueurs = 4  # Nombre de joueurs
     joueurs = {f"Joueur {i+1}": [] for i in range(n_joueurs)}  # Dictionnaire pour les cartes des joueurs
 
@@ -70,6 +83,9 @@ def distribution_cartes_belote_avec_probas(probabilites):
     else:  # P_11
         random.shuffle(cartes)  # Mélanger complètement
         cartes_coupees = cartes
+
+    # Afficher l'ordre des cartes après la coupe
+    afficher_cartes_horizontal(cartes_coupees, "✂️ Ordre des cartes après la coupe")
 
     # Distribution des cartes
     index_carte = 0  # Index pour suivre la carte dans le paquet
@@ -96,10 +112,11 @@ def distribution_cartes_belote_avec_probas(probabilites):
 def detecter_belote(joueurs):
     for joueur, cartes in joueurs.items():
         # Vérifier pour chaque couleur si la Reine et le Roi sont présents
-        couleurs = ["Atouts", "Cœurs", "Carreaux", "Trèfles"]
-        for couleur in couleurs:
-            if f"Q de {couleur}" in cartes and f"K de {couleur}" in cartes:
-                print(f"🔔 {joueur} a une belote dans la couleur {couleur} !")
+        couleurs = ["♥️", "♦️", "♣️"]
+        noms_couleurs = ["Cœurs", "Carreaux", "Trèfles"]
+        for couleur, nom_couleur in zip(couleurs, noms_couleurs):
+            if f"👸 {couleur}" in cartes and f"👑 {couleur}" in cartes:
+                print(f"🔔 {joueur} a une belote dans la couleur {nom_couleur} !")
 
 # Fonction principale combinée
 def simulation_belote_et_probabilites():
